@@ -3,12 +3,20 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <string.h>
 
+//printf("%d\n", s);
 FILE * f;
 
 struct sockaddr_in remote;
+char response[1000001];
 
 int main(){
+    int n;
+    char * request = "GET / HTTP/1.0\r\n\r\n";
     unsigned char ipserver[] = {142, 250, 180, 3};
     int s;
 
@@ -27,4 +35,17 @@ int main(){
         perror("Connect fallita");
         return -1;
     }
+    write(s, request, strlen(request));
+    size_t len = 0;
+
+    for (len = 0; (n = read(s, response + len, 1000000 - len)) > 0; len +=n);
+    if (n == -1)
+        {
+            printf("Error: %d\n", errno);
+            perror("Read fallita");
+            return -1;
+        }
+        printf("%s\n", response);
+
+    close(s);
 }
